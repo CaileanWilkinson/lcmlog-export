@@ -1,0 +1,10 @@
+*.pyc
+.idea
+lcmlog-2019*
+*.mat
+*.pkl
+build
+dist
+*.egg*
+.DS_store
+
