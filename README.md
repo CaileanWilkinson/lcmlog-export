@@ -26,9 +26,8 @@ Direct it to the directory containing those files with the `--lcmtypes PATH` opt
 Requires Python 3.6+ and [lcm](https://lcm-proj.github.io) to run, and pip for installation.
 
 ### Installation
-1. Clone this repo
-2. cd into the root directory
-3. Run `pip3 install .`
+The easiest way to install is through pip.
+Run `pip3 install lcm-export`
 
 ### Uninstallation
 Uninstall with `pip3 uninstall lcm-export`
