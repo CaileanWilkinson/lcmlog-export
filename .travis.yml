@@ -3,6 +3,8 @@ dist: bionic
 addons:
   apt:
     update: true
+    sources:
+      - universe
     packages:
       - lcm
 
