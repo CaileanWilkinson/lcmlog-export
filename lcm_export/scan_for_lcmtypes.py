@@ -6,6 +6,7 @@
     Adapted by C. Wilkinson from the lcm-log2smat module by G. Troni (https://github.com/gtroni/lcm-log2smat)
     Itself the lcm-log2smat module was based on the libbot2 script bot-log2mat (https://github.com/libbot2/libbot2)
 """
+import logging
 import os
 import pyclbr
 import re
@@ -13,11 +14,11 @@ import sys
 from binascii import hexlify
 from typing import List, Dict, Type
 
-from lcm_export import log
 
 # Regex validators
 filename_validator = re.compile(r"[a-zA-Z][a-zA-Z0-9_]*\.py")
 
+logging.basicConfig(level=logging.INFO)
 
 def __find_lcmtypes(root_path: str) -> List[str]:
     """
@@ -30,11 +31,11 @@ def __find_lcmtypes(root_path: str) -> List[str]:
         Returns a list of files containing lcm types as python modules to be imported
         e.g. root_path/dir/some_type.py -> dir.some_type
     """
-    log.log(f"Searching for lcm types in root directory {root_path}")
+    logging.info(f"Searching for lcm types in root directory {root_path}")
 
     found_lcmtypes: List[str] = []
     for root, dirs, files in os.walk(root_path):
-        log.if_verbose("Searching directory {}".format(root))
+        logging.debug("Searching directory {}".format(root))
 
         # The python package will be the relative path to the file
         python_package = os.path.relpath(root, root_path).replace(os.sep, ".")
@@ -46,11 +47,11 @@ def __find_lcmtypes(root_path: str) -> List[str]:
             if not filename_validator.fullmatch(file):
                 continue
 
-            log.if_verbose(f"Testing file: {file}", end=" ")
+            logging.debug(f"Testing file: {file}", end=" ")
 
             lcmtype_name = file[:-3]
             module_name = f"{python_package}.{lcmtype_name}".strip(".")
-            log.if_verbose(f"-> {module_name}")
+            logging.debug(f"-> {module_name}")
 
             # Load python class from type definition & check validity as lcm type
             # To be valid, must have `_get_packed_fingerprint` and `decode` methods
@@ -58,7 +59,7 @@ def __find_lcmtypes(root_path: str) -> List[str]:
                 klass = pyclbr.readmodule(module_name)[lcmtype_name]
                 if "decode" in klass.methods and "_get_packed_fingerprint" in klass.methods:
                     found_lcmtypes.append(module_name)
-                    log.if_verbose(f"Found lcm definition {klass.name} in file: {file}")
+                    logging.debug(f"Found lcm definition {klass.name} in file: {file}")
 
             except (ImportError, KeyError):
                 continue
@@ -78,13 +79,13 @@ def get_lcmtype_dictionary(root_path: str) -> Dict[bytes, Type]:
     """
     # Search the given root path for lcm types
     lcmtypes_list = __find_lcmtypes(root_path)
-    log.log(f"Found {len(lcmtypes_list)} lcm types")
-    log.log("Importing lcm types")
+    logging.info(f"Found {len(lcmtypes_list)} lcm types")
+    logging.info("Importing lcm types")
 
     # Import each lcm type file as a python class & store keyed by fingerprint
     lcmtypes: Dict[bytes, Type] = {}
     for module_name in lcmtypes_list:
-        log.if_verbose(f"Importing {module_name}", end="\t")
+        logging.debug(f"Importing {module_name}", end="\t")
         try:
             # Import the lcm type file & get a reference to the module
             __import__(module_name)
@@ -95,9 +96,9 @@ def get_lcmtype_dictionary(root_path: str) -> Dict[bytes, Type]:
             # Store the class by its fingerprint
             fingerprint = class_reference._get_packed_fingerprint()
             lcmtypes[fingerprint] = class_reference
-            log.if_verbose(f"-> {hexlify(fingerprint)}")
+            logging.debug(f"-> {hexlify(fingerprint)}")
         except Exception as error:
-            log.error(f"Error importing {module_name}")
+            logging.error(f"Error importing {module_name}")
             raise error
 
     return lcmtypes
