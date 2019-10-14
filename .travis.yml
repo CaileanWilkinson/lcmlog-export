@@ -21,5 +21,5 @@ python:
 
 script:
   - pushd test/types && lcm-gen -p *.lcm && popd
-  - python3 lcmlog_export.py --lcmtypes test/types test/data/lcmlog-test.00
+  - python3 lcm_export/lcmlog_export.py --lcmtypes test/types test/data/lcmlog-test.00
   - pytest
