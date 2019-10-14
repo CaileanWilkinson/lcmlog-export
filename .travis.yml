@@ -20,7 +20,6 @@ python:
 #  - pip install -r requirements.txt
 
 script:
-  - pushd test
-  - pushd types && lcm-gen -p *.lcm && popd
-  - lcm-export --lcmtypes types data/lcmlog-test.00
+  - pushd test/types && lcm-gen -p *.lcm && popd
+  - python3 lcmlog_export.py --lcmtypes test/types test/data/lcmlog-test.00
   - pytest
