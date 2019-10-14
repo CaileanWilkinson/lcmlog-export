@@ -1,0 +1,24 @@
+dist: bionic
+
+addons:
+  apt:
+    packages:
+      - lcm
+
+git:
+  depth: 3
+
+language: python
+python:
+  - '3.6'
+  - '3.7'
+
+# Travis installs requirements from pip by default
+#install:
+#  - pip install -r requirements.txt
+
+script:
+  - pushd test
+  - pushd types && lcm-gen -p *.lcm && popd
+  - lcm-export --lcmtypes types data/lcmlog-test.00
+  - pytest
