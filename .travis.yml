@@ -3,10 +3,9 @@ dist: bionic
 addons:
   apt:
     update: true
-    sources:
-      - sourceline: "deb http://archive.ubuntu.com/ubuntu bionic universe"
     packages:
-      - lcm
+      - liblcm-dev
+      - python-liblcm
 
 git:
   depth: 3
