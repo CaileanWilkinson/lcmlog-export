@@ -2,6 +2,7 @@ dist: bionic
 
 addons:
   apt:
+    update: true
     packages:
       - lcm
 
