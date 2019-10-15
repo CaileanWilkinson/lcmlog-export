@@ -20,11 +20,11 @@ before_install:
   - popd
   - python -c "from lcm import Event"
 
-# Travis installs requirements from pip by default
-#install:
-#  - pip install -r requirements.txt
+install:
+  - pip install -r requirements.txt
+  - pip install -e .
 
 script:
   - pushd test/types && lcm-gen -p *.lcm && popd
-  - python3 lcm_export/lcmlog_export.py --lcmtypes test/types test/data/lcmlog-test.00
+  - lcm-export --lcmtypes test/types test/data/lcmlog-test.00
   - pytest
