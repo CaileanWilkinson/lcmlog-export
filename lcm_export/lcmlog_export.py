@@ -8,6 +8,7 @@
 """
 
 import argparse
+import logging
 import os
 import pickle
 import sys
@@ -16,8 +17,9 @@ from typing import Dict, List
 import scipy.io.matlab.mio
 from lcm import EventLog, Event
 
-import lcm_export.log as log
-from lcm_export.scan_for_lcmtypes import get_lcmtype_dictionary
+from .scan_for_lcmtypes import get_lcmtype_dictionary
+
+logging.basicConfig(level=logging.INFO)
 
 """
     ==============
@@ -62,7 +64,8 @@ def get_arguments() -> argparse.Namespace:
     sys.path.insert(0, options.lcmtypes)
 
     # Setup verbose logging
-    log.is_verbose = options.verbose
+    if options.verbose:
+        log.setLevel(logging.INFO)
 
     return options
 
@@ -114,12 +117,12 @@ def convert_to_primitive(data, timestamp=None):
 
     # Trigger a crash on an unrecognised type
     else:
-        log.error(f"Unrecognised data type {type(data)}")
+        logging.error(f"Unrecognised data type {type(data)}")
         exit()
 
 
 def parse_lcm_log(file: str, lcm_types: Dict) -> Dict:
-    log.log(f"Parsing lcm log file {file}")
+    logging.info(f"Parsing lcm log file {file}")
 
     # Open log as an LCM EventLog object
     lcm_log = EventLog(file, "r")
@@ -136,7 +139,7 @@ def parse_lcm_log(file: str, lcm_types: Dict) -> Dict:
 
         # todo - ignored channels
 
-        log.if_verbose(f"Event on channel: {event.channel}", end="\t")
+        logging.debug(f"Event on channel: {event.channel}", end="\t")
 
         # Match the message to an lcm type
         fingerprint = event.data[:8]
@@ -144,15 +147,15 @@ def parse_lcm_log(file: str, lcm_types: Dict) -> Dict:
         if not lcm_type:
             if event.channel not in missing_channels:
                 missing_channels.append(event.channel)
-                log.error(f"Unable to find lcm type for events on channel {event.channel}")
+                logging.error(f"Unable to find lcm type for events on channel {event.channel}")
             continue
-        log.if_verbose(f"-> {lcm_type.__name__}")
+        logging.debug(f"-> {lcm_type.__name__}")
 
         # Decode the message into a python object
         try:
             message = lcm_type.decode(event.data)
         except:
-            log.error(f"Error decoding event on channel {event.channel}")
+            logging.error(f"Error decoding event on channel {event.channel}")
             continue
 
         # Convert the message into loggable form & store
@@ -176,12 +179,12 @@ def dump_to_matlab(data: Dict, output_file: str):
     """
         Creates a Matlab .mat file from teh given dictionary
     """
-    log.log(f"Writing .mat file to {output_file}.mat")
+    logging.info(f"Writing .mat file to {output_file}.mat")
     scipy.io.matlab.mio.savemat(output_file + ".mat", data, oned_as='column')
 
 
 def dump_to_pickle(data: Dict, output_file: str):
-    log.log(f"Writing .pkl file to {output_file}.pkl")
+    logging.info(f"Writing .pkl file to {output_file}.pkl")
     with open(output_file + ".pkl", "wb") as file:
         pickle.dump(data, file, protocol=2)
 
