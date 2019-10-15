@@ -1,0 +1,4 @@
+scipy
+
+#lcm # But LCM is not available from PyPI
+#pytest # only required to run tests

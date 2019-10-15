@@ -1,0 +1,30 @@
+dist: bionic
+
+git:
+  depth: 3
+
+language: python
+python:
+  - '3.6'
+virtualenv:
+  system_site_packages: true
+
+before_install:
+  - curl -sSLO https://github.com/lcm-proj/lcm/releases/download/v1.3.1/lcm-1.3.1.zip
+  - unzip lcm-1.3.1.zip -d /tmp/
+  - pushd /tmp/lcm-1.3.1
+  - PYTHON=`which python` ./configure --without-java
+  - make
+  - sudo make install
+  - sudo ldconfig
+  - popd
+  - python -c "from lcm import Event"
+
+install:
+  - pip install -r requirements.txt
+  - pip install -e .
+
+script:
+  - pushd test/types && lcm-gen -p *.lcm && popd
+  - lcm-export --lcmtypes test/types test/data/lcmlog-test.00
+  - pytest
